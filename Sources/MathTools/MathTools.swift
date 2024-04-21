@@ -67,7 +67,7 @@ extension Range {
     }
 }
 
-enum MatrixError: Error {
+public enum MatrixError: Error {
     case shapeError
     case sizeError
     case invalidIndex
@@ -78,7 +78,7 @@ enum MatrixError: Error {
 }
 
 
-struct Matrix<T:Numeric> {
+public struct Matrix<T:Numeric> {
 
     var shape:[Int]
 
