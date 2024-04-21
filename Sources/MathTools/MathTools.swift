@@ -554,7 +554,7 @@ func storageOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, _ Alimits:[[Int]], _ in
 
 }
 
-func applyOP( _ A:Matrix<Double>, _ op: @escaping (Double)->Double, numthreads:Int=1) throws -> Matrix<Double> {
+public func applyOP( _ A:Matrix<Double>, _ op: @escaping (Double)->Double, numthreads:Int=1) throws -> Matrix<Double> {
 
 
     let size = Int(floor(Double(A.storage.count)/Double(numthreads)))
