@@ -17,7 +17,7 @@ final class MathToolsTests: XCTestCase {
         indices = Array(Set(indices)) 
         var values = [Double]() 
 
-        var matrix1 = Matrix(SHAPE)
+        var matrix1 = Matrix<Double>(SHAPE)
 
         do {
             for idx in indices {
@@ -28,7 +28,7 @@ final class MathToolsTests: XCTestCase {
             
         }
         catch {
-            print("Exception on setValue")
+            print("Exception on setValue for Double matrix")
         }
         do {
             for (nidx,idx) in indices.enumerated() {
@@ -39,7 +39,33 @@ final class MathToolsTests: XCTestCase {
             
         }
         catch {
-            print("Exception on getValue")
+            print("Exception on getValue for Double matrix")
+        }
+
+        var matrix2 = Matrix<Int>(SHAPE)
+        var intValues = [Int]()
+
+        do {
+            for idx in indices {
+                let v = Double.random(in: 0.0...10.0)
+                try matrix2.setValue(idx, Int(v))
+                intValues.append(Int(v))
+            }
+            
+        }
+        catch {
+            print("Exception on setValue for Int matrix")
+        }
+        do {
+            for (nidx,idx) in indices.enumerated() {
+                let v = try matrix2.getValue(idx)
+                //print("compare index \(idx) :  \(v) =? \(values[nidx])")
+                XCTAssertEqual(v,intValues[nidx])
+            }
+            
+        }
+        catch {
+            print("Exception on getValue for Int matrix")
         }
         
         
@@ -49,8 +75,15 @@ final class MathToolsTests: XCTestCase {
 
         let SHAPE = [10,20,3]
 
-        var matrix = Matrix(SHAPE)
-        matrix.random()
+        var matrix = Matrix<Double>(SHAPE)
+
+        do {
+            try matrix.random()
+        }
+        catch {
+            print("Exception in matrix.random()")
+        }
+        
 
         for idx in 0..<matrix.count {
             do {
@@ -90,7 +123,7 @@ final class MathToolsTests: XCTestCase {
         // 
         // set original to have content i,j,k -> i*10000 + j*100 + k
         let SHAPE = [10,20,3]
-        var matrix2 = Matrix(SHAPE)
+        var matrix2 = Matrix<Double>(SHAPE)
 
         //print("strides = \(matrix2.strides)")
 
@@ -154,19 +187,25 @@ final class MathToolsTests: XCTestCase {
     let comboShape = [ 5, 2, 10, 5, 2 ]
  
 
-    print("shape A = \(shapeA) , shape B = \(shapeB)")
+    //print("shape A = \(shapeA) , shape B = \(shapeB)")
 
     // 
 
-    var matA = Matrix(shapeA)
-    var matB = Matrix(shapeB)
+    var matA = Matrix<Double>(shapeA)
+    var matB = Matrix<Double>(shapeB)
 
-    matA.random(0.0,10.0)
-    matB.random(0.0,10.0)
+    do {
+        try matA.random(0.0,10.0)
+        try matB.random(0.0,10.0)
+    }
+    catch {
+        print("exception in matrix.random()")
+    }
+    
 
     // manual distance computation 
 
-    var manualDist = Matrix(comboShape)
+    var manualDist = Matrix<Double>(comboShape)
 
     do {
         for a0 in 0..<shapeA[0] {
@@ -196,7 +235,7 @@ final class MathToolsTests: XCTestCase {
 
 
     let numthreads = 10 
-    var distMat:Matrix?
+    var distMat:Matrix<Double>?
 
 
     do {
@@ -209,7 +248,7 @@ final class MathToolsTests: XCTestCase {
      
     XCTAssert( distMat != nil )
 
-    print("return matrix has shape \(distMat!.shape)")
+    //print("return matrix has shape \(distMat!.shape)")
    
 
     // check manual versus cdist output 
@@ -261,19 +300,25 @@ final class MathToolsTests: XCTestCase {
     let comboShape = [ 10, 5, 2, 5, 2 ]
  
 
-    print("shape A = \(shapeA) , shape B = \(shapeB)")
+    //print("shape A = \(shapeA) , shape B = \(shapeB)")
 
     // 
 
-    var matA = Matrix(shapeA)
-    var matB = Matrix(shapeB)
+    var matA = Matrix<Double>(shapeA)
+    var matB = Matrix<Double>(shapeB)
 
-    matA.random(0.0,10.0)
-    matB.random(0.0,10.0)
+    do {
+        try matA.random(0.0,10.0)
+        try matB.random(0.0,10.0)
+    }
+    catch {
+        print("exception in matrix.random()")
+    }
+    
 
     // manual distance computation 
 
-    var manualDist = Matrix(comboShape)
+    var manualDist = Matrix<Double>(comboShape)
 
     do {
         for a0 in 0..<shapeA[0] {
@@ -303,7 +348,7 @@ final class MathToolsTests: XCTestCase {
 
 
     let numthreads = 10 
-    var distMat:Matrix?
+    var distMat:Matrix<Double>?
     
 
     do {
@@ -316,7 +361,7 @@ final class MathToolsTests: XCTestCase {
      
     XCTAssert( distMat != nil )
 
-    print("return matrix has shape \(distMat!.shape)")
+    //print("return matrix has shape \(distMat!.shape)")
    
 
     // check manual versus cdist output 
@@ -356,4 +401,199 @@ final class MathToolsTests: XCTestCase {
 
  }
 
+ func testBasicMath() throws {
+
+    let shape = [ 10, 5, 2]
+
+    var matA = Matrix<Double>(shape)
+
+    do {
+        try matA.random(0.0,1.0)
+    }
+    catch {
+        print("exception in matrix.random()")
+    }
+    
+
+    
+
+    var ONE = Matrix<Double>(shape)
+    ONE.ones() 
+
+    var matAplusONE:Matrix<Double>?
+    var matAminusONE:Matrix<Double>?
+
+    do {
+        matAplusONE = try matA.add(ONE)
+    }
+    catch {
+        print("exception in add") 
+    }
+
+    do {
+        matAminusONE = try matA.subtract(ONE)
+    }
+    catch {
+        print("exception in subtract") 
+    }
+
+    do { 
+        
+        for idx in 0..<10 {
+            for jdx in 0..<5 {
+                for kdx in 0..<2 {
+                    let v0 = try matA.getValue([idx,jdx,kdx])
+                    let v1 = try matAplusONE!.getValue([idx,jdx,kdx])
+                    XCTAssert( abs((v0 + 1.0) - v1) < 0.00000001)
+                }
+            }
+        }
+    }
+    catch {
+        print("unexpected exception in getValue") 
+    }
+
+
+   do { 
+        
+        for idx in 0..<10 {
+            for jdx in 0..<5 {
+                for kdx in 0..<2 {
+                    let v0 = try matA.getValue([idx,jdx,kdx])
+                    let v1 = try matAminusONE!.getValue([idx,jdx,kdx])
+                    XCTAssert( abs((v0 - 1.0) - v1) < 0.00000001)
+                }
+            }
+        }
+    }
+    catch {
+        print("unexpected exception in getValue") 
+    }
+    
+    let scale = 3.5
+    var matA_scaled:Matrix<Double>?
+
+    do {
+            matA_scaled = try matA.scale(scale)
+    }
+    catch {
+        print("exception in scale") 
+    }
+
+
+    do { 
+        
+        for idx in 0..<10 {
+            for jdx in 0..<5 {
+                for kdx in 0..<2 {
+                    let v0 = try matA.getValue([idx,jdx,kdx])
+                    let v1 = try matA_scaled!.getValue([idx,jdx,kdx])
+                    XCTAssert( abs(scale*v0 - v1) < 0.00000001)
+                }
+            }
+        }
+    }
+    catch {
+        print("unexpected exception in getValue") 
+    }
+
+    var matNonZero = Matrix<Double>(shape)
+
+    do {
+        try matNonZero.random(0.5, 1.0)
+    }
+    catch {
+        print("exception in matrix.random()")
+    }
+    
+
+    let power = 2.5
+
+    var divided:Matrix<Double>?
+    var topower:Matrix<Double>?
+    
+    var reciprocal:Matrix<Double>?
+    var times:Matrix<Double>?
+
+    do {
+        divided = try matA.divide(matNonZero)
+        topower = try matA.power(power)
+        reciprocal = try matNonZero.reciprocal()
+        times = try matA.multiply(matNonZero)
+    }
+    catch {
+        print("exception in matrix math")
+    }
+
+
+    do { 
+        
+        for idx in 0..<10 {
+            for jdx in 0..<5 {
+                for kdx in 0..<2 {
+                    let vA = try matA.getValue([idx,jdx,kdx])
+                    let vnz = try matNonZero.getValue([idx,jdx,kdx])
+                    let vd = try divided!.getValue([idx,jdx,kdx])
+                    let vp = try topower!.getValue([idx,jdx,kdx])
+                    let vt = try times!.getValue([idx,jdx,kdx])
+                    let vr = try reciprocal!.getValue([idx,jdx,kdx])
+                    XCTAssert( abs((vA/vnz) - vd) < 0.00000001)
+                    XCTAssert( abs(pow(vA,power) - vp) < 0.00000001)
+                    XCTAssert( abs(vA*vnz - vt) < 0.00000001)
+                    XCTAssert( abs(1.0/vnz - vr) < 0.00000001)
+                }
+            }
+        }
+    }
+    catch {
+        print("unexpected exception in getValue") 
+    }
+   }
+
+    func testOps() throws {
+
+        let shape = [ 100, 500, 200]
+
+        var matA = Matrix<Double>(shape)
+
+        do {
+            try matA.random(0.0,3.14)
+        }
+        catch {
+            print("exception in matrix.random()")
+        }
+
+        print("*************applyOP, finished random matrix")
+
+        var cosA:Matrix<Double>?
+
+        do {
+            cosA = try applyOP(matA, cos, numthreads:10)
+        }
+        catch {
+            print("exception in applyOP (cosine)")
+        }
+
+        print("**************applyOP, finished matrix cosine")
+
+        do { 
+        
+        for idx in 0..<100 {
+            for jdx in 0..<500 {
+                for kdx in 0..<200 {
+                    let x = try matA.getValue([idx,jdx,kdx])
+                    let v = try cosA!.getValue([idx,jdx,kdx])
+                    XCTAssert( abs(v - cos(x))  < 0.00000001)
+                }
+            }
+        }
+    }
+    catch {
+        print("unexpected exception in getValue") 
+    }
+   }
+
 }
+    
+
+
