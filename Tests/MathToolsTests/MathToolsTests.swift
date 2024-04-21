@@ -646,7 +646,40 @@ final class MathToolsTests: XCTestCase {
             print("unexpected exception in getValue, testOps2") 
         }
     }
+
+    func testVector() throws {
+        let X = Vector([1.0,0.0,0.0])
+        let Y = Vector([0.0,1.0,0.0])
+        let Z = Vector([0.0,0.0,1.0])
+
+        let XplusY = X.add(Y)
+        let XminusY = X.sub(Y)
+        let scale = 2.0
+        let Xtimes2 = X.scale(2.0)
+        let lenXtimes2 = Xtimes2.length()
+        let Xunit = Xtimes2.unit()
+        let distXY = X.dist(Y)
+        let XcrossY = X.cross(Y)
+
+        let dev_XplusY = abs(XplusY.coords[0] - 1.0) + abs(XplusY.coords[1] - 1.0) + abs(XplusY.coords[2])
+        let dev_XminusY = abs(XminusY.coords[0] - 1.0) + abs(XminusY.coords[1] - (-1.0)) + abs(XminusY.coords[2])
+        let dev_Xtimes2 = abs(Xtimes2.coords[0] - 2.0) + abs(Xtimes2.coords[1]) + abs(Xtimes2.coords[2])
+        let dev_lenXtimes2 = abs(lenXtimes2 - 2.0)
+        let dev_Xunit = abs(Xunit!.coords[0] - 1.0) + abs(Xunit!.coords[1]) + abs(Xunit!.coords[2])
+        let dev_distXY = abs(sqrt(2.0) - distXY)
+        let dev_XcrossY = abs(XcrossY.coords[0]) + abs(XcrossY.coords[1]) + abs(XcrossY.coords[2] - 1.0)
+
+        XCTAssert( dev_XplusY  < 0.00000001)
+        XCTAssert( dev_XminusY  < 0.00000001)
+        XCTAssert( dev_Xtimes2  < 0.00000001)
+        XCTAssert( dev_lenXtimes2  < 0.00000001)
+        XCTAssert( dev_Xunit  < 0.00000001)
+        XCTAssert( dev_distXY  < 0.00000001)
+        XCTAssert( dev_XcrossY  < 0.00000001)
+
+
+    }
 }
-    
+
 
 

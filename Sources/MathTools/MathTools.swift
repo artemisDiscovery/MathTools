@@ -7,37 +7,37 @@ let computeQueue = DispatchQueue( label:"compute", attributes: .concurrent )
 let blocksQueue = DispatchQueue( label:"blocks" )
 
 
-struct Vector {
+public struct Vector {
     var n:Int
     var coords:[Double]
 
 
-    init(_ coords:[Double]) {
+    public init(_ coords:[Double]) {
         n = coords.count 
         self.coords = coords 
     }
 
-    func dist(_ other:Vector) -> Double {
+    public func dist(_ other:Vector) -> Double {
         return sqrt( (0..<n) .map {pow(coords[$0] - other.coords[$0], 2)} .reduce(0.0) {$0 + $1} )
     }
 
-    func diff(_ other:Vector) -> Vector {
+    public func sub(_ other:Vector) -> Vector {
         return Vector( (0..<n) .map { coords[$0] - other.coords[$0]} )
     }
 
-    func add(_ other:Vector) -> Vector {
+    public func add(_ other:Vector) -> Vector {
         return Vector( (0..<n) .map { coords[$0] + other.coords[$0]} )
     }
 
-    func scale(_ by:Double) -> Vector {
+    public func scale(_ by:Double) -> Vector {
         return Vector( (0..<n) .map { by * coords[$0]} )
     }
 
-    func length() -> Double {
+    public func length() -> Double {
         return sqrt((0..<n) .map { coords[$0]*coords[$0] } .reduce(0.0) { $0 + $1 } )
     }
 
-    func unit() -> Vector? {
+    public func unit() -> Vector? {
         let len = self.length()
         if len == 0.0 {
             return nil
@@ -48,13 +48,13 @@ struct Vector {
         
     }
 
-    func cross( _ with:Vector) -> Vector {
+    public func cross( _ with:Vector) -> Vector {
         return Vector(  [coords[1]*with.coords[2] - with.coords[1]*coords[2],
                          coords[2]*with.coords[0] - with.coords[2]*coords[0],
                          coords[0]*with.coords[1] - with.coords[0]*coords[1]] )
     }
 
-    func dot( _ with:Vector) -> Double {
+    public func dot( _ with:Vector) -> Double {
         return (0..<n) .map { coords[$0]*with.coords[$0] } .reduce(0.0) {$0 + $1}
     }
 
