@@ -88,7 +88,7 @@ public struct Matrix<T:Numeric> {
 
     var storage:Array<T> 
 
-    init( _ inputshape:[Int], content:[T]? = nil  )  {
+    public init( _ inputshape:[Int], content:[T]? = nil  )  {
         shape = inputshape 
         count = 1
 
@@ -137,7 +137,7 @@ public struct Matrix<T:Numeric> {
     // with shape si,sj,sk,sl stride_i = (sj*sk*sl), stride_j = sk*sl, stride_k = sl 
     // so index of element [i,j,k] = i*(sj*sk) + j*sk + k
 
-    func indicesFromIndex( _ index:Int ) throws -> [Int] {
+    public func indicesFromIndex( _ index:Int ) throws -> [Int] {
         
         if index < 0 || index >= storage.count {
             throw MatrixError.invalidIndex
@@ -156,7 +156,7 @@ public struct Matrix<T:Numeric> {
         return indices 
     }
 
-    func indexFromIndices( _ indices:[Int] ) throws -> Int {
+    public func indexFromIndices( _ indices:[Int] ) throws -> Int {
         
         if indices.count != shape.count {
             throw MatrixError.shapeError
@@ -178,7 +178,7 @@ public struct Matrix<T:Numeric> {
     // for a range in each dimension, return index range and buffer
 
 
-    func _slice_ranges( _ ranges:[Range<Int>] ) throws -> [T] {
+    public func _slice_ranges( _ ranges:[Range<Int>] ) throws -> [T] {
 
         if ranges.count != shape.count {
             throw MatrixError.shapeError
@@ -257,7 +257,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    func slice( _ ranges:[Range<Int>] ) throws -> Matrix {
+    public func slice( _ ranges:[Range<Int>] ) throws -> Matrix {
         var sliceshape = [Int]() 
 
         for range in ranges {
@@ -292,7 +292,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    mutating func zeros() {
+    public mutating func zeros() {
         var rep:Any?
 
         if T.self == Double.self {
@@ -308,7 +308,7 @@ public struct Matrix<T:Numeric> {
         _ = (0..<count).map {  storage[$0] = (rep as! T) }
     }
 
-    mutating func ones() {
+    public mutating func ones() {
         var rep:Any?
 
         if T.self == Double.self {
@@ -323,14 +323,14 @@ public struct Matrix<T:Numeric> {
         _ = (0..<count).map { storage[$0] = (rep as! T) }
     }
 
-    mutating func random(_ lower:Double = 0.0, _ upper:Double = 1.0 ) throws {
+    public mutating func random(_ lower:Double = 0.0, _ upper:Double = 1.0 ) throws {
         if T.self != Double.self {
             throw MatrixError.typeError
         }
-        _ = (0..<count).map { storage[$0] = Double.random(in: lower...upper ) as! T }
+        _ = (0..<count).map { storage[$0] = ((upper - lower)*drand48() + lower) as! T }
     }
 
-    mutating func setValue(_ indices:[Int], _ value:T ) throws {
+    public mutating func setValue(_ indices:[Int], _ value:T ) throws {
         if indices.count != shape.count {
             throw MatrixError.shapeError
         }
@@ -352,7 +352,7 @@ public struct Matrix<T:Numeric> {
         
     }
 
-    func getValue(_ indices:[Int] ) throws -> T {
+    public func getValue(_ indices:[Int] ) throws -> T {
 
         if indices.count != shape.count {
             throw MatrixError.shapeError
@@ -376,7 +376,7 @@ public struct Matrix<T:Numeric> {
         
     }
 
-    func add( _ other:Matrix<T>) throws -> Matrix<T> {
+    public func add( _ other:Matrix<T>) throws -> Matrix<T> {
         // require same shape
         if shape != other.shape {
             throw MatrixError.shapeError
@@ -392,7 +392,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    func subtract( _ other:Matrix) throws -> Matrix<T> {
+    public func subtract( _ other:Matrix) throws -> Matrix<T> {
         // require same shape
         if shape != other.shape {
             throw MatrixError.shapeError
@@ -408,7 +408,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    func multiply( _ other:Matrix) throws -> Matrix<T> {
+    public func multiply( _ other:Matrix) throws -> Matrix<T> {
         // require same shape
         if shape != other.shape {
             throw MatrixError.shapeError
@@ -424,7 +424,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    func divide( _ other:Matrix) throws -> Matrix<T> {
+    public func divide( _ other:Matrix) throws -> Matrix<T> {
         // require same shape
         if shape != other.shape {
             throw MatrixError.shapeError
@@ -442,7 +442,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    func scale( _ scale:Double) throws -> Matrix<T> {
+    public func scale( _ scale:Double) throws -> Matrix<T> {
         // 
 
         if (T.self != Double.self) {
@@ -455,7 +455,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    func power(_ pwr:Double) throws -> Matrix<T> {
+    public func power(_ pwr:Double) throws -> Matrix<T> {
         
         if (T.self != Double.self) {
             throw MatrixError.typeError
@@ -468,7 +468,7 @@ public struct Matrix<T:Numeric> {
         return Matrix<T>(shape, content:mod_storage)
     }
 
-    func reciprocal() throws -> Matrix<T> {
+    public func reciprocal() throws -> Matrix<T> {
 
         if (T.self != Double.self) {
             throw MatrixError.typeError
@@ -582,7 +582,7 @@ public func applyOP( _ A:Matrix<Double>, _ op: @escaping (Double)->Double, numth
 
     for cidx in 0..<nsections {
 
-                print("enter thread \(cidx)")
+                //print("enter thread \(cidx)")
        
                 group.enter()
 
@@ -594,11 +594,13 @@ public func applyOP( _ A:Matrix<Double>, _ op: @escaping (Double)->Double, numth
                         }
                         group.leave()
 
-                        print("exit thread \(data.1)")
+                        //print("exit thread \(data.1)")
                     }
 
-            group.wait()
+            
     } 
+
+    group.wait()
 
     var content = [Double]()
 
@@ -609,7 +611,7 @@ public func applyOP( _ A:Matrix<Double>, _ op: @escaping (Double)->Double, numth
     return Matrix<Double>(A.shape, content:content)
 }
 
-func applyOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, _ op: @escaping (Double,Double)->Double, numthreads:Int=1) throws 
+public func applyOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, _ op: @escaping (Double,Double)->Double, numthreads:Int=1) throws 
             -> Matrix<Double> {
 
     if A.shape != B.shape {
@@ -650,8 +652,10 @@ func applyOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, _ op: @escaping (Double,D
                         group.leave()
                     }
 
-            group.wait()
+            
     } 
+
+    group.wait()
 
     var content = [Double]()
 
@@ -659,10 +663,10 @@ func applyOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, _ op: @escaping (Double,D
         content += BLOCKS[idx]!
     }
 
-    return Matrix(A.shape, content:content)
+    return Matrix<Double>(A.shape, content:content)
 }
 
-func cdist( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1 ) throws -> Matrix<Double> {
+public func cdist( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1 ) throws -> Matrix<Double> {
     
     // 
 
@@ -724,12 +728,14 @@ func cdist( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1 ) throws ->
     
     // 
 
+    let group = DispatchGroup()
+
     for grp in 0..<grpcount {
 
             let Alim = Array(Alimits[(grp*nsections)..<((grp+1)*nsections)]) 
             let Blim = Array(Blimits[(grp*nsections)..<((grp+1)*nsections)])
 
-            let group = DispatchGroup() 
+             
 
             for idx in 0..<nsections {
 
@@ -748,9 +754,11 @@ func cdist( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1 ) throws ->
 
             }   
         
-            group.wait()
+            
 
     }
+
+    group.wait()
 
     // Assemble return array
 
@@ -884,10 +892,10 @@ func cdist_test( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1, testi
 
             }   
         
-            group.wait()
+            
 
     }
-
+    group.wait()
     // Assemble return array
 
     var DIST = [Double]()

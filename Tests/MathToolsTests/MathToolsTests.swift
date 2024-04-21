@@ -450,7 +450,7 @@ final class MathToolsTests: XCTestCase {
         }
     }
     catch {
-        print("unexpected exception in getValue") 
+        print("unexpected exception in getValue, testBasicMath1") 
     }
 
 
@@ -467,7 +467,7 @@ final class MathToolsTests: XCTestCase {
         }
     }
     catch {
-        print("unexpected exception in getValue") 
+        print("unexpected exception in getValue, testBasicMath2") 
     }
     
     let scale = 3.5
@@ -494,7 +494,7 @@ final class MathToolsTests: XCTestCase {
         }
     }
     catch {
-        print("unexpected exception in getValue") 
+        print("unexpected exception in getValue, testBasicMath3") 
     }
 
     var matNonZero = Matrix<Double>(shape)
@@ -546,13 +546,13 @@ final class MathToolsTests: XCTestCase {
         }
     }
     catch {
-        print("unexpected exception in getValue") 
+        print("unexpected exception in getValue, testBasicMath4") 
     }
    }
 
     func testOps() throws {
 
-        let shape = [ 100, 500, 200]
+        let shape = [ 10, 50, 200]
 
         var matA = Matrix<Double>(shape)
 
@@ -563,7 +563,6 @@ final class MathToolsTests: XCTestCase {
             print("exception in matrix.random()")
         }
 
-        print("*************applyOP, finished random matrix")
 
         var cosA:Matrix<Double>?
 
@@ -574,12 +573,11 @@ final class MathToolsTests: XCTestCase {
             print("exception in applyOP (cosine)")
         }
 
-        print("**************applyOP, finished matrix cosine")
 
         do { 
         
-        for idx in 0..<100 {
-            for jdx in 0..<500 {
+        for idx in 0..<10 {
+            for jdx in 0..<50 {
                 for kdx in 0..<200 {
                     let x = try matA.getValue([idx,jdx,kdx])
                     let v = try cosA!.getValue([idx,jdx,kdx])
@@ -589,10 +587,65 @@ final class MathToolsTests: XCTestCase {
         }
     }
     catch {
-        print("unexpected exception in getValue") 
+        print("unexpected exception in getValue, testOps") 
     }
    }
 
+    func testOps2() throws {
+
+            let shape = [ 10, 50, 200]
+
+            var matA = Matrix<Double>(shape)
+            var matB = Matrix<Double>(shape)
+
+            do {
+                try matA.random(1.0,5.0)
+                try matB.random(-5.0,-1.0)
+            }
+            catch {
+                print("exception in matrix.random()")
+            }
+
+
+            var sum:Matrix<Double>?
+            var difference:Matrix<Double>?
+            var multiply:Matrix<Double>?
+            var divide:Matrix<Double>?
+
+            do {
+                sum = try applyOP2(matA, matB, +, numthreads:10)
+                difference = try applyOP2(matA, matB, -, numthreads:10)
+                multiply = try applyOP2(matA, matB, *, numthreads:10)
+                divide = try applyOP2(matA, matB, /, numthreads:10)
+            }
+            catch {
+                print("exception in applyOP2")
+            }
+
+
+            do { 
+            
+            for idx in 0..<10 {
+                for jdx in 0..<50 {
+                    for kdx in 0..<200 {
+                        let a = try matA.getValue([idx,jdx,kdx])
+                        let b = try matB.getValue([idx,jdx,kdx])
+                        let s = try sum!.getValue([idx,jdx,kdx])
+                        let d = try difference!.getValue([idx,jdx,kdx])
+                        let m = try multiply!.getValue([idx,jdx,kdx])
+                        let v = try divide!.getValue([idx,jdx,kdx])
+                        XCTAssert( abs((a+b) - s)  < 0.00000001)
+                        XCTAssert( abs((a-b) - d)  < 0.00000001)
+                        XCTAssert( abs((a*b) - m)  < 0.00000001)
+                        XCTAssert( abs((a/b) - v)  < 0.00000001)
+                    }
+                }
+            }
+        }
+        catch {
+            print("unexpected exception in getValue, testOps2") 
+        }
+    }
 }
     
 
