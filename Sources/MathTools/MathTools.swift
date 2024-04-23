@@ -156,6 +156,30 @@ public struct Matrix<T:Numeric> {
         return indices 
     }
 
+    func advance (_ indice: inout [Int] ) {
+        for pos in (0...(shape.count-1)).reversed() {
+            indice[pos] += 1
+            if indice[pos] == shape[pos] {
+                indice[pos] = 0 
+                continue
+            }
+            return
+        }
+    }
+
+    public func indicesInOrder() -> [[Int]] {
+        var indices = [[Int]]() 
+
+        var currentIndice = Array(repeating:0, count:shape.count)
+
+        for _ in 0..<count {
+            indices.append(currentIndice)
+            advance( &currentIndice )
+        }
+
+        return indices 
+    }
+
     public func indexFromIndices( _ indices:[Int] ) throws -> Int {
         
         if indices.count != shape.count {
@@ -324,10 +348,16 @@ public struct Matrix<T:Numeric> {
     }
 
     public mutating func random(_ lower:Double = 0.0, _ upper:Double = 1.0 ) throws {
-        if T.self != Double.self {
+        if T.self == Double.self {
+            _ = (0..<count).map { storage[$0] = ((upper - lower)*drand48() + lower) as! T }
+        }
+        else if T.self == Int.self {
+            _ = (0..<count).map { storage[$0] = Int((upper - lower)*drand48() + lower) as! T }
+        }
+        else {
             throw MatrixError.typeError
         }
-        _ = (0..<count).map { storage[$0] = ((upper - lower)*drand48() + lower) as! T }
+        
     }
 
     public mutating func setValue(_ indices:[Int], _ value:T ) throws {
@@ -375,6 +405,17 @@ public struct Matrix<T:Numeric> {
         return storage[index]
         
     }
+    public func add( _ const:T) throws -> Matrix<T> {
+        
+        if (T.self != Double.self) && (T.self != Int.self) {
+            throw MatrixError.typeError
+        }
+
+        let sum = storage .map { $0 + const }
+
+        return Matrix<T>(shape, content:sum )
+
+    }
 
     public func add( _ other:Matrix<T>) throws -> Matrix<T> {
         // require same shape
@@ -392,7 +433,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    public func subtract( _ other:Matrix) throws -> Matrix<T> {
+    public func subtract( _ other:Matrix<T>) throws -> Matrix<T> {
         // require same shape
         if shape != other.shape {
             throw MatrixError.shapeError
@@ -408,7 +449,19 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    public func multiply( _ other:Matrix) throws -> Matrix<T> {
+    public func subtract( _ const:T) throws -> Matrix<T> {
+        
+        if (T.self != Double.self) && (T.self != Int.self) {
+            throw MatrixError.typeError
+        }
+
+        let diff = storage .map { $0 - const }
+
+        return Matrix<T>(shape, content:diff )
+
+    }
+
+    public func multiply( _ other:Matrix<T>) throws -> Matrix<T> {
         // require same shape
         if shape != other.shape {
             throw MatrixError.shapeError
@@ -424,7 +477,19 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    public func divide( _ other:Matrix) throws -> Matrix<T> {
+    public func multiply( _ const:T) throws -> Matrix<T> {
+        
+        if (T.self != Double.self) && (T.self != Int.self) {
+            throw MatrixError.typeError
+        }
+
+        let product = storage .map { $0 * const }
+
+        return Matrix<T>(shape, content:product )
+
+    }
+
+    public func divide( _ other:Matrix<T>) throws -> Matrix<T> {
         // require same shape
         if shape != other.shape {
             throw MatrixError.shapeError
@@ -437,6 +502,18 @@ public struct Matrix<T:Numeric> {
         
         let ratio = zip( storage, other.storage ) .map { (($0 as! Double) / ($1 as! Double)) as! T }
         
+
+        return Matrix<T>(shape, content:ratio )
+
+    }
+
+    public func divide( _ const:T) throws -> Matrix<T> {
+        
+        if (T.self != Double.self) && (T.self != Int.self) {
+            throw MatrixError.typeError
+        }
+
+        let ratio = storage .map { (($0 as! Double) / (const as! Double)) as! T }
 
         return Matrix<T>(shape, content:ratio )
 
@@ -480,10 +557,214 @@ public struct Matrix<T:Numeric> {
 
         return Matrix<T>(shape, content:mod_storage)
     }
+
+    public func applyMask(_ mask:Mask) throws -> ([[Int]],[T]) {
+        // returns list of selected indices and corresponding values
+
+        if mask.shape != self.shape {
+            throw MatrixError.shapeError
+        }
+
+        let indices = self.indicesInOrder()
+
+        var retindices = [[Int]]()
+        var retvalues = [T]()
+
+        for (vidx,(indice,s)) in zip(indices,mask.storage).enumerated() {
+            if s {
+                retindices.append(indice)
+                retvalues.append(self.storage[vidx])
+            }
+        }
+
+        return (retindices,retvalues)
+
+
+    }
+
+    public mutating func setdiagonal(_ value:T) throws {
+        if shape.count != 2 || shape[0] != shape[1] {
+            throw MatrixError.shapeError
+        }
+
+        let ndiag = self.storage.count / strides[0]
+
+        for idiag in 0..<ndiag {
+            storage[idiag * strides[0] + idiag ] = value 
+        }
+    }
 }
 
 
+public struct Mask {
 
+    var shape:[Int]
+
+    var strides:[Int]
+
+    var count:Int
+
+    var storage:Array<Bool> 
+
+    public init( _ inputshape:[Int], content:[Bool]? = nil  )  {
+        shape = inputshape 
+        count = 1
+
+        for d in shape {
+            count *= d
+        }
+
+        strides = [Int]() 
+
+        for sidx in 0..<(shape.count - 1) {
+            var str = 1
+            for sjdx in (sidx+1)..<shape.count {
+                str *= shape[sjdx]
+            }
+            strides.append(str)
+        }
+
+        // always have stride 1 for last dimension
+
+        strides.append(1)
+
+    
+        if content == nil {
+            storage = Array(repeating:false, count:count)
+        }
+        else {
+            storage = content!
+        }
+        
+        
+
+    }
+
+    func advance (_ indice: inout [Int] ) {
+        for pos in (0...(shape.count-1)).reversed() {
+            indice[pos] += 1
+            if indice[pos] == shape[pos] {
+                indice[pos] = 0 
+                continue
+            }
+            return
+        }
+    }
+
+    public func indicesInOrder() -> [[Int]] {
+        var indices = [[Int]]() 
+
+        var currentIndice = Array(repeating:0, count:shape.count)
+
+        for _ in 0..<count {
+            indices.append(currentIndice)
+            advance( &currentIndice )
+        }
+
+        return indices 
+    }
+
+    public func nonzero() -> [[Int]] {
+
+        let indices = self.indicesInOrder() 
+
+        var retindices = [[Int]]()
+
+        for (indice,s) in zip(indices,self.storage) {
+            if s {
+                retindices.append(indice)
+            }
+        }
+
+        return retindices
+    }
+
+    public mutating func setValue(_ indices:[Int], _ value:Bool ) throws {
+        if indices.count != shape.count {
+            throw MatrixError.shapeError
+        }
+
+        var index = 0
+
+        for (sidx,idx) in indices.enumerated() {
+            if idx < 0 || idx >= shape[sidx] {
+                throw MatrixError.invalidIndex
+            }
+
+            index += idx * strides[sidx]
+            if index < 0 || index >= storage.count {
+                throw MatrixError.sizeError
+            }
+        }
+
+        storage[index] = value 
+        
+    }
+
+    public func getValue(_ indices:[Int] ) throws -> Bool {
+
+        if indices.count != shape.count {
+            throw MatrixError.shapeError
+        }
+
+        var index = 0
+
+        for (sidx,idx) in indices.enumerated() {
+            if idx < 0 || idx >= shape[sidx] {
+                throw MatrixError.invalidIndex
+            }
+            
+            index += idx * strides[sidx]
+
+            if index < 0 || index >= storage.count {
+                throw MatrixError.sizeError
+            }
+        }
+
+        return storage[index]
+        
+    }
+
+    public static func compare(_ matA:Matrix<Double>, _ filter: @escaping (Double) -> Bool ) -> Mask {
+
+        let content = matA.storage .map { filter($0) }
+        return Mask(matA.shape, content:content )
+
+    }
+
+    public static func compare(_ matA:Matrix<Int>, _ filter: @escaping (Int) -> Bool ) -> Mask {
+
+        let content = matA.storage .map { filter($0) }
+        return Mask(matA.shape, content:content )
+
+    }
+
+    public static func compare(_ matA:Matrix<Double>, _ matB:Matrix<Double>, _ filter: @escaping (Double,Double) -> Bool ) throws -> Mask {
+
+        if matA.shape != matB.shape {
+            throw MatrixError.shapeError
+        }
+
+        let content = zip(matA.storage, matB.storage) .map { filter($0,$1) }
+
+        return Mask(matA.shape, content:content )
+
+    }
+
+    public static func compare(_ matA:Matrix<Int>, _ matB:Matrix<Int>, _ filter: @escaping (Int,Int) -> Bool ) throws -> Mask {
+
+        if matA.shape != matB.shape {
+            throw MatrixError.shapeError
+        }
+
+        let content = zip(matA.storage, matB.storage) .map { filter($0,$1) }
+        
+        return Mask(matA.shape, content:content )
+
+    }
+
+
+}
 
 
 func addBlock(_ BLOCKS: inout [[Double]?], _ block:[Double], _ index:Int, _ offset:Int ) {

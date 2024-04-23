@@ -68,6 +68,33 @@ final class MathToolsTests: XCTestCase {
             print("Exception on getValue for Int matrix")
         }
         
+        var MatDiag = Matrix<Double>([10,10])
+
+        do {
+            try MatDiag.setdiagonal(1.0)
+        }
+        catch {
+            print("exception in setdiagonal()")
+            return 
+        }
+
+        do {
+            for i in 0..<10 {
+                for j in 0..<10 {
+                    let v = try MatDiag.getValue([i,j])
+                    if i == j {
+                        XCTAssert( v == 1.0 )
+                    }
+                    else {
+                        XCTAssert( v == 0.0 )
+                    }
+                }
+            }
+        }
+        catch {
+            print( "unexpected exception in in getValue")
+        }
+
         
     }
 
@@ -422,9 +449,13 @@ final class MathToolsTests: XCTestCase {
 
     var matAplusONE:Matrix<Double>?
     var matAminusONE:Matrix<Double>?
+    var matAplusCONSTONE:Matrix<Double>?
+    var matAminusCONSTONE:Matrix<Double>?
+    var matAdivideCONST3:Matrix<Double>?
 
     do {
         matAplusONE = try matA.add(ONE)
+        matAplusCONSTONE = try matA.add(1.0)
     }
     catch {
         print("exception in add") 
@@ -432,6 +463,7 @@ final class MathToolsTests: XCTestCase {
 
     do {
         matAminusONE = try matA.subtract(ONE)
+        matAminusCONSTONE = try matA.subtract(1.0)
     }
     catch {
         print("exception in subtract") 
@@ -444,7 +476,9 @@ final class MathToolsTests: XCTestCase {
                 for kdx in 0..<2 {
                     let v0 = try matA.getValue([idx,jdx,kdx])
                     let v1 = try matAplusONE!.getValue([idx,jdx,kdx])
+                    let v1c = try matAplusCONSTONE!.getValue([idx,jdx,kdx])
                     XCTAssert( abs((v0 + 1.0) - v1) < 0.00000001)
+                    XCTAssert( abs((v0 + 1.0) - v1c) < 0.00000001)
                 }
             }
         }
@@ -461,7 +495,9 @@ final class MathToolsTests: XCTestCase {
                 for kdx in 0..<2 {
                     let v0 = try matA.getValue([idx,jdx,kdx])
                     let v1 = try matAminusONE!.getValue([idx,jdx,kdx])
+                    let v1c = try matAminusCONSTONE!.getValue([idx,jdx,kdx])
                     XCTAssert( abs((v0 - 1.0) - v1) < 0.00000001)
+                    XCTAssert( abs((v0 - 1.0) - v1c) < 0.00000001)
                 }
             }
         }
@@ -520,6 +556,7 @@ final class MathToolsTests: XCTestCase {
         topower = try matA.power(power)
         reciprocal = try matNonZero.reciprocal()
         times = try matA.multiply(matNonZero)
+        matAdivideCONST3 = try matA.divide(3.0)
     }
     catch {
         print("exception in matrix math")
@@ -537,10 +574,12 @@ final class MathToolsTests: XCTestCase {
                     let vp = try topower!.getValue([idx,jdx,kdx])
                     let vt = try times!.getValue([idx,jdx,kdx])
                     let vr = try reciprocal!.getValue([idx,jdx,kdx])
+                    let v3 = try matAdivideCONST3!.getValue([idx,jdx,kdx])
                     XCTAssert( abs((vA/vnz) - vd) < 0.00000001)
                     XCTAssert( abs(pow(vA,power) - vp) < 0.00000001)
                     XCTAssert( abs(vA*vnz - vt) < 0.00000001)
                     XCTAssert( abs(1.0/vnz - vr) < 0.00000001)
+                    XCTAssert( abs(v3 - (vA)/3.0) < 0.00000001)
                 }
             }
         }
@@ -650,12 +689,11 @@ final class MathToolsTests: XCTestCase {
     func testVector() throws {
         let X = Vector([1.0,0.0,0.0])
         let Y = Vector([0.0,1.0,0.0])
-        let Z = Vector([0.0,0.0,1.0])
 
         let XplusY = X.add(Y)
         let XminusY = X.sub(Y)
         let scale = 2.0
-        let Xtimes2 = X.scale(2.0)
+        let Xtimes2 = X.scale(scale)
         let lenXtimes2 = Xtimes2.length()
         let Xunit = Xtimes2.unit()
         let distXY = X.dist(Y)
@@ -678,6 +716,106 @@ final class MathToolsTests: XCTestCase {
         XCTAssert( dev_XcrossY  < 0.00000001)
 
 
+    }
+
+    func testIndicesInOrder() throws {
+        let shape = [ 10, 50, 25]
+        let matA = Matrix<Double>(shape)
+
+        var refIndices = [[Int]]() 
+
+        do {
+            for idx in 0..<matA.count {
+                let indice = try matA.indicesFromIndex(idx)
+                refIndices.append(indice)
+            }
+        }
+        catch {
+            print("unexpected error in indicesFromIndex")
+            return 
+        }
+        
+
+        let indices = matA.indicesInOrder()
+
+        for (indice,refindice) in zip(indices,refIndices) {
+            //print("\(indice) : \(refindice)")
+            XCTAssert(indice == refindice)
+        }
+    }
+
+    func testMask() throws {
+        let shape = [ 10, 50, 25]
+        var matA = Matrix<Double>(shape)
+        var matI = Matrix<Int>(shape)
+        var matJ = Matrix<Int>(shape)
+        var maskIJ:Mask?
+
+        do {
+            try matA.random(0.0, 1.0)
+            try matI.random(0.0, 10.0)
+            try matJ.random(0.0, 10.0)
+            maskIJ = try Mask.compare(matI, matJ) { $0 < $1 }
+
+        }
+        catch {
+            print("unexpected error in matrix.random() of compare two")
+            return
+        }
+
+        let mask = Mask.compare(matA) {$0 < 0.5}
+        let maskI = Mask.compare(matI) {$0 < 5}
+
+        var trueIndices = [[Int]]()
+        var falseIndices = [[Int]]()
+        var trueValues = [Double]()
+
+        var maskNonZero:[[Int]]?
+        var maskTrue:[[Int]]?
+        var maskTrueValues:[Double]?
+
+        do {
+
+            for i in 0..<10 {
+                for j in 0..<50 {
+                    for k in 0..<25 {
+                        let v = try matA.getValue([i,j,k])
+                        let vI = try matI.getValue([i,j,k])
+                        let vJ = try matJ.getValue([i,j,k])
+                        let b = try mask.getValue([i,j,k])
+                        if b {
+                            trueIndices.append([i,j,k])
+                            trueValues.append(v)
+                        }
+                        else {
+                            falseIndices.append([i,j,k])
+                        }
+                        let bI = try maskI.getValue([i,j,k])
+                        let bIJ = try maskIJ!.getValue([i,j,k])
+                        
+                        //print("indices = \(i),\(j),\(k), val = \(v), mask = \(b)")
+                        XCTAssert( b == (v < 0.5))
+                        XCTAssert( bI == (vI < 5))
+                        XCTAssert( bIJ == (vI < vJ))
+                    }
+                }
+            }
+
+            maskNonZero = mask.nonzero()
+            let data = try matA.applyMask(mask)
+            maskTrue = data.0
+            maskTrueValues = data.1
+
+        }
+        catch {
+            print("unexpected error in matrix.getValue()")
+        }
+
+        // check nonzero and applyMask output
+
+        XCTAssert( trueIndices == maskNonZero! )
+        XCTAssert( trueIndices == maskTrue!)
+        XCTAssert( maskTrueValues! == trueValues )
     }
 }
 
