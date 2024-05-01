@@ -7,7 +7,7 @@ let computeQueue = DispatchQueue( label:"compute", attributes: .concurrent )
 let blocksQueue = DispatchQueue( label:"blocks" )
 
 
-public struct Vector {
+public struct Vector: Equatable {
     var n:Int
     var coords:[Double]
 
@@ -58,6 +58,14 @@ public struct Vector {
         return (0..<n) .map { coords[$0]*with.coords[$0] } .reduce(0.0) {$0 + $1}
     }
 
+    public static func ==(lhs: Vector, rhs: Vector) -> Bool {
+        for (x,y) in zip(lhs.coords,rhs.coords) {
+            if x != y {
+                return false
+            }
+        }
+        return true
+}
 
 }
 
