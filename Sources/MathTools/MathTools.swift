@@ -94,7 +94,7 @@ public struct Matrix<T:Numeric> {
 
     var count:Int
 
-    var storage:Array<T> 
+    public var storage:Array<T> 
 
     public init( _ inputshape:[Int], content:[T]? = nil  )  {
         shape = inputshape 
