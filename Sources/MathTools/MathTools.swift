@@ -88,11 +88,11 @@ public enum MatrixError: Error {
 
 public struct Matrix<T:Numeric> {
 
-    var shape:[Int]
+    public var shape:[Int]
 
-    var strides:[Int]
+    public var strides:[Int]
 
-    var count:Int
+    public var count:Int
 
     public var storage:Array<T> 
 
