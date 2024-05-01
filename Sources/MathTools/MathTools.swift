@@ -9,7 +9,7 @@ let blocksQueue = DispatchQueue( label:"blocks" )
 
 public struct Vector: Equatable {
     var n:Int
-    var coords:[Double]
+    public var coords:[Double]
 
 
     public init(_ coords:[Double]) {
