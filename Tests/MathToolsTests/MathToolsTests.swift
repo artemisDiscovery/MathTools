@@ -19,6 +19,16 @@ final class MathToolsTests: XCTestCase {
 
         var matrix1 = Matrix<Double>(SHAPE)
 
+        // check that accessors work OK 
+
+        let storage = matrix1.getStorage()
+        let shape = matrix1.getShape()
+        //let strides = matrix1.getStrides()
+
+        XCTAssertEqual(storage.count,SHAPE[0]*SHAPE[1]*SHAPE[2])
+        XCTAssertEqual(shape,SHAPE)
+
+
         do {
             for idx in indices {
                 let v = Double.random(in: 0.0...10.0)

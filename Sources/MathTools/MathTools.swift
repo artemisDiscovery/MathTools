@@ -88,13 +88,13 @@ public enum MatrixError: Error {
 
 public struct Matrix<T:Numeric> {
 
-    public var shape:[Int]
+    var shape:[Int]
 
-    public var strides:[Int]
+    var strides:[Int]
 
-    public var count:Int
+    var count:Int
 
-    public var storage:Array<T> 
+    var storage:Array<T> 
 
     public init( _ inputshape:[Int], content:[T]? = nil  )  {
         shape = inputshape 
@@ -600,6 +600,18 @@ public struct Matrix<T:Numeric> {
         for idiag in 0..<ndiag {
             storage[idiag * strides[0] + idiag ] = value 
         }
+    }
+
+    public func getStorage() -> Array<T> {
+        return storage
+    }
+
+    public func getStrides() -> [Int] {
+        return strides
+    }
+
+    public func getShape() -> [Int] {
+        return shape
     }
 }
 
