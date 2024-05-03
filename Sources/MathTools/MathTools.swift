@@ -441,6 +441,90 @@ public struct Matrix<T:Numeric> {
 
     }
 
+    public func addTranspose(_ other:Matrix<T>) throws -> Matrix<T> {
+        // require same 1D shapes
+
+        if shape.count != 1 || other.shape.count != 1 {
+            throw MatrixError.shapeError
+        }
+
+        if (T.self != Double.self) && (T.self != Int.self) {
+            throw MatrixError.typeError
+        }
+
+        var outstorage = [T]()
+
+        for x in storage {
+            let row = (0..<other.shape[0]) .map { x + other.storage[$0] }
+            outstorage += row 
+        }
+
+        return Matrix<T>([shape[0],other.shape[0]], content:outstorage )
+    }
+
+    public func subtractTranspose(_ other:Matrix<T>) throws -> Matrix<T> {
+        // require same 1D shapes
+
+        if shape.count != 1 || other.shape.count != 1  {
+            throw MatrixError.shapeError
+        }
+
+        if (T.self != Double.self) && (T.self != Int.self) {
+            throw MatrixError.typeError
+        }
+
+        var outstorage = [T]()
+
+        for x in storage {
+            let row = (0..<other.shape[0] ).map { x - other.storage[$0] }
+            outstorage += row 
+        }
+
+        return Matrix<T>([shape[0],other.shape[0]], content:outstorage )
+    }
+
+    public func multiplyTranspose(_ other:Matrix<T>) throws -> Matrix<T> {
+        // require same 1D shapes
+
+        if shape.count != 1 || other.shape.count != 1  {
+            throw MatrixError.shapeError
+        }
+
+        if (T.self != Double.self) && (T.self != Int.self) {
+            throw MatrixError.typeError
+        }
+
+        var outstorage = [T]()
+
+        for x in storage {
+            let row = (0..<other.shape[0]) .map { x * other.storage[$0] }
+            outstorage += row 
+        }
+
+        return Matrix<T>([shape[0],other.shape[0]], content:outstorage )
+    }
+
+    public func divideTranspose(_ other:Matrix<T>) throws -> Matrix<T> {
+        // require same 1D shapes
+
+        if shape.count != 1 || other.shape.count != 1  {
+            throw MatrixError.shapeError
+        }
+
+        if (T.self != Double.self) && (T.self != Int.self) {
+            throw MatrixError.typeError
+        }
+
+        var outstorage = [T]()
+
+        for x in storage {
+            let row = (0..<other.shape[0]) .map { ((x as! Double) / (other.storage[$0] as! Double)) as! T }
+            outstorage += row 
+        }
+
+        return Matrix<T>([shape[0],other.shape[0]], content:outstorage )
+    }
+
     public func subtract( _ other:Matrix<T>) throws -> Matrix<T> {
         // require same shape
         if shape != other.shape {

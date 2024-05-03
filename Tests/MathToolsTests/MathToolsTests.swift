@@ -696,6 +696,84 @@ final class MathToolsTests: XCTestCase {
         }
     }
 
+    func testTranspose() throws {
+
+        let sizeA = 10
+        let sizeB = 5
+
+        var matA = Matrix<Double>([sizeA])
+        var matB = Matrix<Double>([sizeB])
+
+        do {
+            try matA.random(0.5,1.0)
+            try matB.random(0.5,1.0)
+        }
+        catch {
+            print("unexpected exception in matrix.random")
+        }
+
+        var manualTransposeAdd = Matrix<Double>([sizeA,sizeB])
+        var manualTransposeSub = Matrix<Double>([sizeA,sizeB])
+        var manualTransposeMul = Matrix<Double>([sizeA,sizeB])
+        var manualTransposeDiv = Matrix<Double>([sizeA,sizeB])
+
+        do {
+            for i in 0..<sizeA {
+                for j in 0..<sizeB {
+                    try manualTransposeAdd.setValue( [i,j], matA.getValue([i]) + matB.getValue([j]))
+                    try manualTransposeSub.setValue( [i,j], matA.getValue([i]) - matB.getValue([j]))
+                    try manualTransposeMul.setValue( [i,j], matA.getValue([i]) * matB.getValue([j]))
+                    try manualTransposeDiv.setValue( [i,j], matA.getValue([i]) / matB.getValue([j]))
+                }
+            }
+        }
+        catch {
+            print("unexpected exception in set/getValue")
+        }
+
+        var transposeAdd:Matrix<Double>?
+        var transposeMul:Matrix<Double>?
+        var transposeSub:Matrix<Double>?
+        var transposeDiv:Matrix<Double>?
+
+        do {
+            transposeAdd = try matA.addTranspose(matB)
+            transposeSub = try matA.subtractTranspose(matB)
+            transposeMul = try matA.multiplyTranspose(matB)
+            transposeDiv = try matA.divideTranspose(matB)
+        }
+        catch {
+            print("exception in transpose math operation")
+        }
+
+        XCTAssert( transposeAdd!.shape == [sizeA,sizeB])
+        XCTAssert( transposeSub!.shape == [sizeA,sizeB])
+        XCTAssert( transposeMul!.shape == [sizeA,sizeB])
+        XCTAssert( transposeDiv!.shape == [sizeA,sizeB])
+
+        /*
+        do {
+            for i in 0..<sizeA {
+                for j in 0..<sizeB {
+                    let manadd = try manualTransposeAdd.getValue([i,j])
+                    let transadd = try transposeAdd!.getValue([i,j])
+                    print(" index \(i),\(j) manual add = \(manadd) trans add = \(transadd)")
+                }
+            }
+        }
+        catch {
+            print("unexpected exception in set/getValue")
+        }
+        */
+
+        XCTAssert(transposeAdd!.storage == manualTransposeAdd.storage )
+        XCTAssert(transposeSub!.storage == manualTransposeSub.storage )
+        XCTAssert(transposeMul!.storage == manualTransposeMul.storage )
+        XCTAssert(transposeDiv!.storage == manualTransposeDiv.storage )
+
+
+    }
+
     func testVector() throws {
         let X = Vector([1.0,0.0,0.0])
         let Y = Vector([0.0,1.0,0.0])
