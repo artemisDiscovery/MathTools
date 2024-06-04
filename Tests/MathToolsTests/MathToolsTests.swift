@@ -779,9 +779,12 @@ final class MathToolsTests: XCTestCase {
         let Y = Vector([0.0,1.0,0.0])
 
         let XplusY = X.add(Y)
+        let XplusY2 = X + Y
         let XminusY = X.sub(Y)
+        let XminusY2 = X - Y
         let scale = 2.0
         let Xtimes2 = X.scale(scale)
+        let Xtimes2_2 = 2.0 * X
         let lenXtimes2 = Xtimes2.length()
         let Xunit = Xtimes2.unit()
         let distXY = X.dist(Y)
@@ -802,6 +805,10 @@ final class MathToolsTests: XCTestCase {
         XCTAssert( dev_Xunit  < 0.00000001)
         XCTAssert( dev_distXY  < 0.00000001)
         XCTAssert( dev_XcrossY  < 0.00000001)
+
+        XCTAssert( XplusY == XplusY2 )
+        XCTAssert( XminusY == XminusY2 )
+        XCTAssert( Xtimes2 == Xtimes2_2 )
 
 
     }

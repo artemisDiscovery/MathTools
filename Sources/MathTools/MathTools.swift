@@ -75,6 +75,24 @@ extension Range {
     }
 }
 
+// extend arithmetic operators for vectors 
+
+func + (left:Vector, right:Vector) -> Vector {
+    return left.add(right)
+}
+
+func - (left:Vector, right:Vector) -> Vector {
+    return left.sub(right)
+}
+
+func * (left:Double, right:Vector) -> Vector {
+    return right.scale(left)
+}
+
+func * (left:Vector, right:Double) -> Vector {
+    return left.scale(right)
+}
+
 public enum MatrixError: Error {
     case shapeError
     case sizeError
