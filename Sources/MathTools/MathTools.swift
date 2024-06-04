@@ -77,19 +77,20 @@ extension Range {
 
 // extend arithmetic operators for vectors 
 
-func + (left:Vector, right:Vector) -> Vector {
+
+public func + (left:Vector, right:Vector) -> Vector {
     return left.add(right)
 }
 
-func - (left:Vector, right:Vector) -> Vector {
+public func - (left:Vector, right:Vector) -> Vector {
     return left.sub(right)
 }
 
-func * (left:Double, right:Vector) -> Vector {
+public func * (left:Double, right:Vector) -> Vector {
     return right.scale(left)
 }
 
-func * (left:Vector, right:Double) -> Vector {
+public func * (left:Vector, right:Double) -> Vector {
     return left.scale(right)
 }
 
