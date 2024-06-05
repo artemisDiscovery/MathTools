@@ -105,7 +105,7 @@ public enum MatrixError: Error {
 }
 
 
-public struct Matrix<T:Numeric> {
+public class Matrix<T:Numeric> {
 
     var shape:[Int]
 
@@ -113,7 +113,7 @@ public struct Matrix<T:Numeric> {
 
     var count:Int
 
-    var storage:Array<T> 
+    public var storage:Array<T> 
 
     public init( _ inputshape:[Int], content:[T]? = nil  )  {
         shape = inputshape 
@@ -308,6 +308,64 @@ public struct Matrix<T:Numeric> {
 
     }
 
+    public func getSliceRanges( _ ranges:[Range<Int>] ) throws -> [Range<Int>] {
+
+        if ranges.count != shape.count {
+            throw MatrixError.shapeError
+        }
+
+        for sidx in 0..<shape.count {
+            if !(0..<shape[sidx]).contains(otherRange:ranges[sidx]) {
+                throw MatrixError.invalidIndex
+            }
+        }
+        var indices = ranges[0].map { $0 * strides[0] }
+
+        for sidx in 1..<strides.count {
+            // 
+            var indices2 = [Int]()
+
+            for idx in indices {
+                for idx2 in ranges[sidx] {
+                    indices2.append(idx + strides[sidx]*idx2)
+                }
+                indices = indices2
+            } 
+
+        }
+
+        // coallesce into ranges
+
+        // Start with spans, which are inclusive intervals
+
+        var slicespans = [[Int]]() 
+
+        var length = 0 
+
+        var currentSpan = [indices[0],indices[0]] 
+
+        for idx in indices[1..<indices.count] {
+            
+            if currentSpan[1] == idx - 1 {
+                currentSpan[1] = idx
+            }
+            else {
+                slicespans.append(currentSpan)
+                length += currentSpan[1] - currentSpan[0] + 1
+                currentSpan = [idx,idx]
+            }
+           
+        }
+
+        slicespans.append(currentSpan)
+        length += currentSpan[1] - currentSpan[0] + 1
+
+        let sliceranges = slicespans.map { $0[0]..<($0[1]+1) }
+
+        return sliceranges
+
+    }
+
     public func slice( _ ranges:[Range<Int>] ) throws -> Matrix {
         var sliceshape = [Int]() 
 
@@ -343,7 +401,8 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    public mutating func zeros() {
+
+    public func zeros() {
         var rep:Any?
 
         if T.self == Double.self {
@@ -359,7 +418,7 @@ public struct Matrix<T:Numeric> {
         _ = (0..<count).map {  storage[$0] = (rep as! T) }
     }
 
-    public mutating func ones() {
+    public func ones() {
         var rep:Any?
 
         if T.self == Double.self {
@@ -374,7 +433,7 @@ public struct Matrix<T:Numeric> {
         _ = (0..<count).map { storage[$0] = (rep as! T) }
     }
 
-    public mutating func random(_ lower:Double = 0.0, _ upper:Double = 1.0 ) throws {
+    public func random(_ lower:Double = 0.0, _ upper:Double = 1.0 ) throws {
         if T.self == Double.self {
             _ = (0..<count).map { storage[$0] = ((upper - lower)*drand48() + lower) as! T }
         }
@@ -387,7 +446,7 @@ public struct Matrix<T:Numeric> {
         
     }
 
-    public mutating func setValue(_ indices:[Int], _ value:T ) throws {
+    public func setValue(_ indices:[Int], _ value:T ) throws {
         if indices.count != shape.count {
             throw MatrixError.shapeError
         }
@@ -693,7 +752,7 @@ public struct Matrix<T:Numeric> {
 
     }
 
-    public mutating func setdiagonal(_ value:T) throws {
+    public func setdiagonal(_ value:T) throws {
         if shape.count != 2 || shape[0] != shape[1] {
             throw MatrixError.shapeError
         }
@@ -1100,6 +1159,36 @@ public func applyOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1, 
     }
 
     return Matrix<Double>(A.shape, content:content)
+}
+
+// apply operation 'in place' for slice of Matrix A, using matrix B as input
+// Size of slice of A must match B 
+
+public func applyOP2_slice( _ A:Matrix<Double>, _ sliceA:[Range<Int>], _ B:Matrix<Double>,  _ op: @escaping (Double,Double)->Double) throws  {
+
+    var sliceRanges:[Range<Int>]?
+
+    do {
+        sliceRanges = try A.getSliceRanges(sliceA)
+    }
+    catch {
+        throw MatrixError.shapeError
+    }
+
+    let sliceShape = sliceA .map { $0.upperBound - $0.lowerBound }
+    
+    if sliceShape != B.shape {
+        throw MatrixError.shapeError
+    }
+
+    // not sure how to multithread this
+    var accum = 0
+
+    for range in sliceRanges! {
+            _ = (range.enumerated()).map { A.storage[$0.element] = op(A.storage[$0.element], B.storage[accum + $0.offset]) }
+            accum += (range.upperBound - range.lowerBound)
+    }
+
 }
 
 public func cdist( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1 ) throws -> Matrix<Double> {

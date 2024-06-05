@@ -931,6 +931,33 @@ final class MathToolsTests: XCTestCase {
         XCTAssert( trueIndices == maskTrue!)
         XCTAssert( maskTrueValues! == trueValues )
     }
+
+    func testSliceOp() throws {
+        let storage = [ 0.0, 1.0, 2.0,  3.0, 4.0, 5.0,  6.0, 7.0, 8.0,
+                        0.0, -1.0, -2.0,  -3.0, -4.0, -5.0,  -6.0, -7.0, -8.0 ]
+
+        var matA = Matrix<Double>( [2,3,3], content:storage)
+
+        // add to slice 0..<2, 0..<2, 1..<3
+
+        let matB = Matrix<Double>( [2,2,2], content:[1.0, 2.0, 3.0, 4.0,   5.0, 6.0, 7.0, 8.0])
+
+        // will add to matA indices 0,0,1  0,0,2  0,1,1, 0,1,2    1,0,1  1,0,2  1,1,1  1,1,2 
+
+        // new values :
+        //[ 0.0, 2.0, 4.0,  3.0, 7.0, 9.0,  6.0, 7.0, 8.0,
+       //   0.0, 4.0, 4.0,  -3.0, 3.0, 3.0,  -6.0, -7.0, -8.0 ]
+
+        do {
+            try applyOP2_slice( matA, [0..<2, 0..<2, 1..<3], matB,  + )
+        }
+        catch {
+            print("applyOP2_slice threw exception")
+        }
+
+        print("after sliceOP addition, A storage = \(matA.storage)")
+
+    }
 }
 
 
