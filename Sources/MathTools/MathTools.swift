@@ -752,6 +752,14 @@ public class Matrix<T:Numeric> {
 
     }
 
+    public func setValueForMask(_ mask:Mask, _ value:T ) throws {
+        if mask.shape != self.shape {
+            throw MatrixError.shapeError
+        }
+
+        mask.storage.enumerated() .map { if $0.element {self.storage[$0.offset] = value } } 
+    }
+
     public func setdiagonal(_ value:T) throws {
         if shape.count != 2 || shape[0] != shape[1] {
             throw MatrixError.shapeError

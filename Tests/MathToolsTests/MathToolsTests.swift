@@ -958,6 +958,25 @@ final class MathToolsTests: XCTestCase {
         print("after sliceOP addition, A storage = \(matA.storage)")
 
     }
+
+    func testSetValueForMask() throws {
+        let storage = [ 0.0, 1.0, 2.0,  3.0, 4.0, 5.0,  6.0, 7.0, 8.0,
+                        0.0, -1.0, -2.0,  -3.0, -4.0, -5.0,  -6.0, -7.0, -8.0 ]
+
+        var matA = Matrix<Double>( [2,3,3], content:storage)
+
+        let mask = Mask.compare( matA ) { $0 < 0.0 }
+
+        do {
+            try matA.setValueForMask(mask, 100.0 )
+        }
+        catch {
+            print("setValueForMask threw exception")
+        }
+
+        print("after setValueForMask, A storage = \(matA.storage)")
+
+    }
 }
 
 
