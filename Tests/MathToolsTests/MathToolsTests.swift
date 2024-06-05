@@ -696,6 +696,25 @@ final class MathToolsTests: XCTestCase {
         }
     }
 
+    func testsum() throws {
+        let storage = [ 0.0, 1.0, 2.0,  3.0, 4.0, 5.0,  6.0, 7.0, 8.0 ]
+
+        let matA = Matrix<Double>( [3,3], content:storage )
+
+        var sumA:Matrix<Double>?
+
+        do {
+            sumA = try matA.sum()
+        }
+        catch {
+            print("matrix sum over last dimension throws exception")
+        }
+
+        XCTAssert( sumA!.getShape() == [3] )
+        XCTAssert( sumA!.storage == [3.0, 12.0, 21.0 ])
+
+    }
+
     func testTranspose() throws {
 
         let sizeA = 10

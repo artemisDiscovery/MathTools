@@ -705,6 +705,38 @@ public struct Matrix<T:Numeric> {
         }
     }
 
+
+    public func sum() throws -> Matrix<T> {
+        // sum last dimension
+
+        if T.self == Bool.self {
+            throw MatrixError.typeError
+        }
+
+        if shape.count == 1 {
+            throw MatrixError.shapeError
+        }
+
+        var zero:Any?
+
+        if T.self == Double.self {
+            zero = 0.0
+        }
+        else if T.self == Int.self {
+            zero = 0
+        }
+        
+        let lastdim = shape[shape.count-1]
+        let nout = storage.count / lastdim
+
+        let slices = (0..<nout) .map { storage[($0*lastdim)..<(($0+1)*lastdim)] }
+        let sumstorage = slices.map { $0.reduce(zero as! T) { $0 + $1 } }
+
+        let outshape = Array(shape[0..<(shape.count-1)])
+
+        return Matrix<T>(outshape, content:sumstorage)
+    }
+
     public func getStorage() -> Array<T> {
         return storage
     }
