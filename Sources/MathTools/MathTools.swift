@@ -958,7 +958,7 @@ func storageOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, _ Alimits:[[Int]], _ in
 
 }
 
-public func applyOP( _ A:Matrix<Double>, _ op: @escaping (Double)->Double, numthreads:Int=1) throws -> Matrix<Double> {
+public func applyOP( _ A:Matrix<Double>, numthreads:Int=1, _ op: @escaping (Double)->Double) throws -> Matrix<Double> {
 
 
     let size = Int(floor(Double(A.storage.count)/Double(numthreads)))
@@ -1015,7 +1015,7 @@ public func applyOP( _ A:Matrix<Double>, _ op: @escaping (Double)->Double, numth
     return Matrix<Double>(A.shape, content:content)
 }
 
-public func applyOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, _ op: @escaping (Double,Double)->Double, numthreads:Int=1) throws 
+public func applyOP2( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1, _ op: @escaping (Double,Double)->Double) throws 
             -> Matrix<Double> {
 
     if A.shape != B.shape {

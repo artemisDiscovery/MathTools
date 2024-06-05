@@ -616,7 +616,7 @@ final class MathToolsTests: XCTestCase {
         var cosA:Matrix<Double>?
 
         do {
-            cosA = try applyOP(matA, cos, numthreads:10)
+            cosA = try applyOP(matA,  numthreads:10 ) { cos($0) }
         }
         catch {
             print("exception in applyOP (cosine)")
@@ -662,10 +662,10 @@ final class MathToolsTests: XCTestCase {
             var divide:Matrix<Double>?
 
             do {
-                sum = try applyOP2(matA, matB, +, numthreads:10)
-                difference = try applyOP2(matA, matB, -, numthreads:10)
-                multiply = try applyOP2(matA, matB, *, numthreads:10)
-                divide = try applyOP2(matA, matB, /, numthreads:10)
+                sum = try applyOP2(matA, matB, numthreads:10, +)
+                difference = try applyOP2(matA, matB, numthreads:10, - )
+                multiply = try applyOP2(matA, matB, numthreads:10, * )
+                divide = try applyOP2(matA, matB, numthreads:10, / )
             }
             catch {
                 print("exception in applyOP2")
