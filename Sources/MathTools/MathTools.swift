@@ -375,7 +375,7 @@ public class Matrix<T:Numeric> {
 
         //print("slice shape = \(sliceshape)")
 
-        var theslice = Matrix<T>(sliceshape)
+        let theslice = Matrix<T>(sliceshape)
 
         var buffer:[T]?
 
@@ -513,7 +513,8 @@ public class Matrix<T:Numeric> {
             throw MatrixError.typeError
         }
 
-        let sum = zip( storage, other.storage ) .map { $0 + $1 }
+        let sum = (0..<storage.count) .map { storage[$0] + other.storage[$0] }
+        //let sum = zip( storage, other.storage ) .map { $0 + $1 }
 
         return Matrix<T>(shape, content:sum )
 
@@ -613,7 +614,8 @@ public class Matrix<T:Numeric> {
             throw MatrixError.typeError
         }
 
-        let diff = zip( storage, other.storage ) .map { $0 - $1 }
+        //let diff = zip( storage, other.storage ) .map { $0 - $1 }
+        let diff = (0..<storage.count) .map { storage[$0] - other.storage[$0] }
 
         return Matrix<T>(shape, content:diff )
 
@@ -641,9 +643,10 @@ public class Matrix<T:Numeric> {
             throw MatrixError.typeError
         }
 
-        let diff = zip( storage, other.storage ) .map { $0 * $1 }
+        //let diff = zip( storage, other.storage ) .map { $0 * $1 }
+        let pdct = (0..<storage.count) .map { storage[$0] * other.storage[$0] }
 
-        return Matrix<T>(shape, content:diff )
+        return Matrix<T>(shape, content:pdct )
 
     }
 
@@ -670,7 +673,8 @@ public class Matrix<T:Numeric> {
         }
 
         
-        let ratio = zip( storage, other.storage ) .map { (($0 as! Double) / ($1 as! Double)) as! T }
+        //let ratio = zip( storage, other.storage ) .map { (($0 as! Double) / ($1 as! Double)) as! T }
+        let ratio = (0..<storage.count) .map { ((storage[$0] as! Double) / (other.storage[$0] as! Double)) as! T }
         
 
         return Matrix<T>(shape, content:ratio )
@@ -740,12 +744,15 @@ public class Matrix<T:Numeric> {
         var retindices = [[Int]]()
         var retvalues = [T]()
 
-        for (vidx,(indice,s)) in zip(indices,mask.storage).enumerated() {
+        for vidx in 0..<indices.count {
+            let indice = indices[vidx]
+            let s = mask.storage[vidx]
             if s {
                 retindices.append(indice)
                 retvalues.append(self.storage[vidx])
             }
         }
+        
 
         return (retindices,retvalues)
 
@@ -904,9 +911,10 @@ public struct Mask {
 
         var retindices = [[Int]]()
 
-        for (indice,s) in zip(indices,self.storage) {
+        for k in 0..<indices.count {
+            let s = self.storage[k]
             if s {
-                retindices.append(indice)
+                retindices.append(indices[k])
             }
         }
 
@@ -965,7 +973,8 @@ public struct Mask {
             throw MatrixError.shapeError
         }
 
-        let anded = zip(self.storage, other.storage) .map { $0 && $1 }
+        //let anded = zip(self.storage, other.storage) .map { $0 && $1 }
+        let anded = (0..<self.storage.count) .map { self.storage[$0] && other.storage[$0] }
 
         return Mask(self.shape, content:anded )
 
@@ -977,7 +986,9 @@ public struct Mask {
             throw MatrixError.shapeError
         }
 
-        let ored = zip(self.storage, other.storage) .map { $0 || $1 }
+        //let ored = zip(self.storage, other.storage) .map { $0 || $1 }
+
+        let ored = (0..<self.storage.count) .map { self.storage[$0] || other.storage[$0] }
 
         return Mask(self.shape, content:ored )
 
@@ -1012,7 +1023,8 @@ public struct Mask {
             throw MatrixError.shapeError
         }
 
-        let content = zip(matA.storage, matB.storage) .map { filter($0,$1) }
+        //let content = zip(matA.storage, matB.storage) .map { filter($0,$1) }
+        let content = (0..<matA.storage.count) .map { filter(matA.storage[$0], matB.storage[$0])}
 
         return Mask(matA.shape, content:content )
 
@@ -1024,7 +1036,9 @@ public struct Mask {
             throw MatrixError.shapeError
         }
 
-        let content = zip(matA.storage, matB.storage) .map { filter($0,$1) }
+        //let content = zip(matA.storage, matB.storage) .map { filter($0,$1) }
+
+        let content = (0..<matA.storage.count) .map { filter(matA.storage[$0], matB.storage[$0])}
         
         return Mask(matA.shape, content:content )
 
