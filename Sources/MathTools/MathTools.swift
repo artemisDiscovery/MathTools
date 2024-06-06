@@ -760,6 +760,18 @@ public class Matrix<T:Numeric> {
         mask.storage.enumerated() .map { if $0.element {self.storage[$0.offset] = value } } 
     }
 
+    public func setValueForMask(_ mask:Mask, _ other:Matrix<T> ) throws {
+        if mask.shape != self.shape {
+            throw MatrixError.shapeError
+        }
+
+        if other.shape != self.shape {
+            throw MatrixError.shapeError
+        }
+
+        mask.storage.enumerated() .map { if $0.element {self.storage[$0.offset] = other.storage[$0.offset] } } 
+    }
+
     public func setdiagonal(_ value:T) throws {
         if shape.count != 2 || shape[0] != shape[1] {
             throw MatrixError.shapeError
@@ -946,6 +958,39 @@ public struct Mask {
         return storage[index]
         
     }
+
+    public func logical_and( _ other:Mask ) throws -> Mask {
+
+        if other.shape != self.shape {
+            throw MatrixError.shapeError
+        }
+
+        let anded = zip(self.storage, other.storage) .map { $0 && $1 }
+
+        return Mask(self.shape, content:anded )
+
+    }
+
+    public func logical_or( _ other:Mask ) throws -> Mask {
+
+        if other.shape != self.shape {
+            throw MatrixError.shapeError
+        }
+
+        let ored = zip(self.storage, other.storage) .map { $0 || $1 }
+
+        return Mask(self.shape, content:ored )
+
+    }
+
+    public func logical_not()  -> Mask {
+
+        let snot = self.storage .map { !$0 }
+
+        return Mask(self.shape, content:snot )
+
+    }
+
 
     public static func compare(_ matA:Matrix<Double>, _ filter: @escaping (Double) -> Bool ) -> Mask {
 

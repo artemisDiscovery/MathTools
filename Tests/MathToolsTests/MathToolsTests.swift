@@ -977,6 +977,34 @@ final class MathToolsTests: XCTestCase {
         print("after setValueForMask, A storage = \(matA.storage)")
 
     }
+
+    func testMaskLogicals() throws {
+        let storage = [ 0.0, 1.0, 2.0,  3.0, 4.0, 5.0,  6.0, 7.0, 8.0,
+                        0.0, -1.0, -2.0,  -3.0, -4.0, -5.0,  -6.0, -7.0, -8.0 ]
+
+        var matA = Matrix<Double>( [2,3,3], content:storage)
+
+        let maskLE = Mask.compare( matA ) { $0 <= 0.0 }
+        let maskGE = Mask.compare( matA ) { $0 >= 0.0 }
+
+        var maskAND:Mask?
+        var maskOR:Mask?
+        var maskNOT:Mask?
+
+        do {
+            maskAND = try maskLE.logical_and(maskGE)
+            maskOR = try maskLE.logical_or(maskGE)
+            maskNOT = maskLE.logical_not()
+        }
+        catch {
+            print("mask logical threw exception")
+        }
+
+        print("logical LE AND GE storage : \(maskAND!.storage)")
+        print("logical LE OR GE storage : \(maskOR!.storage)")
+        print("logical NOT LE storage : \(maskNOT!.storage)")
+
+    }
 }
 
 
