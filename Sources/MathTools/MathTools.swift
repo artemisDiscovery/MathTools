@@ -232,11 +232,13 @@ public class Matrix<T:Numeric> {
     public func _slice_ranges( _ ranges:[Range<Int>] ) throws -> [T] {
 
         if ranges.count != shape.count {
+            print("slice error : ranges count = \(ranges.count), shape count = \(shape.count)")
             throw MatrixError.shapeError
         }
 
         for sidx in 0..<shape.count {
             if !(0..<shape[sidx]).contains(otherRange:ranges[sidx]) {
+                print("slice error : range \(0..<shape[sidx]) does not contain \(ranges[sidx])")
                 throw MatrixError.invalidIndex
             }
         }
