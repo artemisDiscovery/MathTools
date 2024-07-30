@@ -434,7 +434,13 @@ public class Matrix<T:Numeric> {
         else {
             rep = true
         }
-        _ = (0..<count).map { storage[$0] = (rep as! T) }
+
+        let repT = rep as! T
+
+        for sidx in 0..<count {
+            storage[sidx] = repT
+        }
+        //_ = (0..<count).map { storage[$0] = (rep as! T) }
     }
 
     public func random(_ lower:Double = 0.0, _ upper:Double = 1.0 ) throws {
@@ -516,6 +522,7 @@ public class Matrix<T:Numeric> {
         if (T.self != Double.self) && (T.self != Int.self) {
             throw MatrixError.typeError
         }
+
 
         let sum = (0..<storage.count) .map { storage[$0] + other.storage[$0] }
         //let sum = zip( storage, other.storage ) .map { $0 + $1 }
@@ -767,8 +774,14 @@ public class Matrix<T:Numeric> {
         if mask.shape != self.shape {
             throw MatrixError.shapeError
         }
+        // .enumerated is SLOW
 
-        mask.storage.enumerated() .map { if $0.element {self.storage[$0.offset] = value } } 
+        for midx in 0..<mask.storage.count {
+            if mask.storage[midx] {
+                self.storage[midx] = value
+            }
+        }
+        //mask.storage.enumerated() .map { if $0.element {self.storage[$0.offset] = value } } 
     }
 
     public func setValueForMask(_ mask:Mask, _ other:Matrix<T> ) throws {
@@ -780,7 +793,13 @@ public class Matrix<T:Numeric> {
             throw MatrixError.shapeError
         }
 
-        mask.storage.enumerated() .map { if $0.element {self.storage[$0.offset] = other.storage[$0.offset] } } 
+        for midx in 0..<mask.storage.count {
+            if mask.storage[midx] {
+                self.storage[midx] = other.storage[midx]
+            }
+        }
+
+        //mask.storage.enumerated() .map { if $0.element {self.storage[$0.offset] = other.storage[$0.offset] } } 
     }
 
     public func setdiagonal(_ value:T) throws {
@@ -978,7 +997,13 @@ public struct Mask {
         }
 
         //let anded = zip(self.storage, other.storage) .map { $0 && $1 }
-        let anded = (0..<self.storage.count) .map { self.storage[$0] && other.storage[$0] }
+
+        var anded = Array<Bool>( repeating:false, count:self.storage.count )
+
+        for sidx in 0..<self.storage.count {
+            anded[sidx] = self.storage[sidx] && other.storage[sidx]
+        }
+        //let anded = (0..<self.storage.count) .map { self.storage[$0] && other.storage[$0] }
 
         return Mask(self.shape, content:anded )
 
@@ -990,17 +1015,26 @@ public struct Mask {
             throw MatrixError.shapeError
         }
 
+        var ored = Array<Bool>( repeating:false, count:self.storage.count )
         //let ored = zip(self.storage, other.storage) .map { $0 || $1 }
 
-        let ored = (0..<self.storage.count) .map { self.storage[$0] || other.storage[$0] }
+        for sidx in 0..<self.storage.count {
+            ored[sidx] = self.storage[sidx] || other.storage[sidx]
+        }
+        //let ored = (0..<self.storage.count) .map { self.storage[$0] || other.storage[$0] }
 
         return Mask(self.shape, content:ored )
 
     }
 
     public func logical_not()  -> Mask {
+        
+        var snot = Array<Bool>( repeating:false, count:self.storage.count )
+        //let snot = self.storage .map { !$0 }
 
-        let snot = self.storage .map { !$0 }
+        for sidx in 0..<self.storage.count {
+            snot[sidx] = !self.storage[sidx] 
+        }
 
         return Mask(self.shape, content:snot )
 
@@ -1367,6 +1401,7 @@ public func cdist( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1 ) th
     // If reversed, 'A' index increase faster, need to rearrange
     // for aidx in 0..<|A| :
     //      append D[aidx + |A|*k], k in 0..< |B|
+    // This is slow, but do not want to fix right now
     if reverse {
         DIST = (0..<(A.count/DIM)) .flatMap { (aidx) in 
                 (0..<(B.count/DIM)) .map { DIST[aidx + $0*(A.count/DIM)]} }
