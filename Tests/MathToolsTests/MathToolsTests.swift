@@ -1007,5 +1007,37 @@ final class MathToolsTests: XCTestCase {
     }
 }
 
+func testTranspose() throws {
+
+    let shape = [2,4,3]
+
+    var matA = Matrix<Double>( shape )
+
+
+    do {
+            try matA.random(0.0,1.0)
+        }
+        catch {
+            print("unexpected exception in matrix.random")
+        }
+    
+    let matATrans = matA.transpose()
+
+    // enumerate in reverse 
+    do {
+        for i in 0..<3 {
+            for j in 0..<4 {
+                for k in 0..<2 {
+                    let vT = try matATrans.getValue([i,j,k])
+                    let v = try matA.getValue([k,j,i])
+                    XCTAssert( vT == v )
+                }
+            }
+        }
+    }
+    catch {
+        print("getValue threw exception in testTranspose")
+    }
+}
 
 

@@ -552,6 +552,50 @@ public class Matrix<T:Numeric> {
         return Matrix<T>([shape[0],other.shape[0]], content:outstorage )
     }
 
+    public func transpose() -> Matrix<T> {
+        
+        // return transpose of this matrix, fill storage by enumerating indices in 'reverse order'
+
+        var outstorage = [T]()
+
+        var reverseShape = Array(shape)
+        reverseShape.reverse()
+
+        var current_offset = 0
+
+        var currentIndices = Array( repeating:0, count:strides.count )
+
+        // NOTE : if I enumerate in 'forward' order, slowest changing index comes FIRST,
+        // no need to reverse !!
+
+        while true {
+
+            outstorage.append(storage[current_offset])
+
+            // advance current indices 
+
+            for pos in 0..<currentIndices.count {
+                currentIndices[pos] += 1 
+                if currentIndices[pos] == shape[pos] {
+                    current_offset -= (shape[pos] - 1) * strides[pos]
+                    currentIndices[pos] = 0
+                }
+                else {
+                    current_offset += strides[pos]
+                    break
+                }
+            }
+
+            if current_offset == 0 {
+                break
+            }
+        }
+
+        return Matrix<T>(reverseShape, content:outstorage )
+
+        
+    }
+
     public func subtractTranspose(_ other:Matrix<T>) throws -> Matrix<T> {
         // require same 1D shapes
 
