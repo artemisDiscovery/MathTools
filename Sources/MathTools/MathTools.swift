@@ -3,8 +3,8 @@
 import Foundation 
 import Dispatch
 
-let computeQueue = DispatchQueue( label:"compute", attributes: .concurrent )
-let blocksQueue = DispatchQueue( label:"blocks" )
+let computeQueue = DispatchQueue( label:"mathcompute", attributes: .concurrent )
+let blocksQueue = DispatchQueue( label:"mathblocks" )
 
 
 public struct Vector: Equatable {
