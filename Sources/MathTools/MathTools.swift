@@ -1428,11 +1428,11 @@ public func cdist( _ A:Matrix<Double>, _ B:Matrix<Double>, numthreads:Int=1 ) th
 
             }   
         
-            
+            group.wait() 
 
     }
 
-    group.wait()
+ 
 
     // Assemble return array
 
